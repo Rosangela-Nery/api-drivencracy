@@ -27,7 +27,7 @@ const surveySchema = joi.object({
 
 const votingOptionsSchema = joi.object({
     title: joi.string().min(1).required(),
-    pollId: joi.number().required()
+    pollId: joi.string().required()
 });
 
 const formatOfAVoteSchema = joi.object({
@@ -66,9 +66,6 @@ app.post("/poll", async (req, res) => {
 app.get("/poll", async (req, res) => {
     try {
         const polls = await db.collection("poll").find().toArray();
-        if(!polls) {
-            res.status(404).send({"message": "Nenhuma enquete foi cadastrada!"});
-        }
 
         res.send(polls);
     } catch (error) {
@@ -76,4 +73,48 @@ app.get("/poll", async (req, res) => {
     }
 });
 
+// Rotas choice
+app.post("/choice", async (req, res) => {
+    const { title, pollId } = req.body;
+    
+    try {
+        const choice = {
+            title: title,
+            pollId: pollId,
+        }
+        
+        const validation = votingOptionsSchema.validate(choice, {abortEarly: false});
+        
+        if(validation.error) {
+            res.status(422).send(error);
+            return;
+        }
+
+        const choiceExists = await db
+            .collection("choice")
+            .find({ title: title }).count();
+
+        if(choiceExists) {
+            res.send(409);
+            return;
+        }
+
+        await db.collection("choice").insertOne(choice);
+
+        res.send(201);
+    } catch (error) {
+        res.status(500).send(error.message);
+    }
+
+});
+
+app.get("/choice", async (req, res) => {
+    try {
+        const choices = await db.collection("choice").find({}).toArray();
+
+        res.send(choices); //retornando minhas listas de opções de voto de uma enquete
+    } catch (error) {
+        res.status(500).send(error.message);
+    }
+});
 app.listen(5000, () => console.log("App rummin in port 5000"));
