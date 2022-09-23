@@ -1,11 +1,8 @@
-import mongo from '..db/db.js';
-import joi from 'joi';
+import mongo from '../db/db.js';
 import dayjs from 'dayjs';
-
-const surveySchema = joi.object({
-    title: joi.string().min(3).required(),
-    expireAt: joi.string(),
-});
+import { status_code } from '../enums/status.js';
+import { COLLECTIONS } from '../enums/collections.js';
+import { surveySchema } from '../schemas/mySchemas.js';
 
 async function pollPost() {
 
@@ -17,32 +14,32 @@ async function pollPost() {
     
     if(validation.error) {
         const errors = validation.error.details.map((detail) => detail.message);
-        res.status(422).send(errors);
+        res.status(status_code.unprocessable_entity).send(errors);
         return;
     }
     
     try {
         await mongo
-            .collection("poll")
+            .collection(COLLECTIONS.poll)
             .insertOne({
                 title: poll.title, 
                 expireAt: dayjs().format("YYYY-MM-DD HH:mm"),
             });
     
-        res.send(201);
+        res.send(status_code.created);
     } catch (error) {
-        res.status(500).send(error.message);
+        res.status(status_code.server_error).send(error.message);
     }
 }
 
 async function pollGet() {
 
     try {
-        const polls = await mongo.collection("poll").find().toArray();
+        const polls = await mongo.collection(COLLECTIONS.poll).find().toArray();
     
         res.send(polls);
     } catch (error) {
-        res.status(500).send(error.message);
+        res.status(status_code.server_error).send(error.message);
     }
 
 }
