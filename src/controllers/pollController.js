@@ -4,7 +4,7 @@ import { status_code } from '../enums/status.js';
 import { COLLECTIONS } from '../enums/collections.js';
 import { surveySchema } from '../schemas/mySchemas.js';
 
-async function pollPost() {
+async function pollPost(req, res) {
 
     const poll = req.body;
     
@@ -32,7 +32,7 @@ async function pollPost() {
     }
 }
 
-async function pollGet() {
+async function pollGet(req, res) {
 
     try {
         const polls = await mongo.collection(COLLECTIONS.poll).find().toArray();
@@ -44,4 +44,14 @@ async function pollGet() {
 
 }
 
-export { pollPost, pollGet };
+async function pollIdChoice(req, res) {
+    try {
+        const choices = await db.collection("choice").find({}).toArray();
+
+        res.send(choices); //retornando minhas listas de opções de voto de uma enquete
+    } catch (error) {
+        res.status(500).send(error.message);
+    };
+}
+
+export { pollPost, pollGet, pollIdChoice };

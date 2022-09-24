@@ -1,3 +1,8 @@
+import { status_code } from '../enums/status.js';
+import { COLLECTIONS } from '../enums/collections.js';
+import { votingOptionsSchema } from '../schemas/mySchemas.js'
+import db from '../db/db.js';
+
 async function choicePost (req, res) {
     const { title, pollId } = req.body;
     
@@ -10,24 +15,24 @@ async function choicePost (req, res) {
         const validation = votingOptionsSchema.validate(choice, {abortEarly: false});
         
         if(validation.error) {
-            res.status(422).send(error);
+            res.status(status_code.unprocessable_entity).send(error);
             return;
         }
 
         const choiceExists = await db
-            .collection("choice")
+            .collection(COLLECTIONS.choice)
             .find({ title: title }).count();
 
         if(choiceExists) {
-            res.send(409);
+            res.send(status_code.conflict);
             return;
         }
 
-        await db.collection("choice").insertOne(choice);
+        await db.collection(COLLECTIONS.choice).insertOne(choice);
 
-        res.send(201);
+        res.send(status_code.created);
     } catch (error) {
-        res.status(500).send(error.message);
+        res.status(status_code.server_error).send(error.message);
     }
 
 };
