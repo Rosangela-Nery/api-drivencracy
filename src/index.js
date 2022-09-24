@@ -10,13 +10,7 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-
 app.use(pollRoutes);
-
-
-// app.post("/choice/:id/vote", async (req, res) => {
-    
-// });
 
 const PORT = process.env.PORT
 app.listen(PORT, () => {    
