@@ -53,4 +53,8 @@ async function choicePost (req, res) {
 
 };
 
-export { choicePost };
+async function votePost (req, res) {
+
+}
+
+export { choicePost, votePost };

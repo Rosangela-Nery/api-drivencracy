@@ -3,6 +3,7 @@ import dayjs from 'dayjs';
 import { status_code } from '../enums/status.js';
 import { COLLECTIONS } from '../enums/collections.js';
 import { surveySchema } from '../schemas/mySchemas.js';
+import { ObjectId } from 'mongodb';
 
 async function pollPost(req, res) {
 
@@ -53,13 +54,26 @@ async function pollGet(req, res) {
 }
 
 async function pollIdChoice(req, res) {
-    try {
-        const choices = await db.collection("choice").find({}).toArray();
+    const { id } = req.params;
 
-        res.send(choices); //retornando minhas listas de opções de voto de uma enquete
+    const existPoll = await mongo.collection(COLLECTIONS.poll).find({_id: ObjectId(id)}).count();
+
+    if(!existPoll) {
+        res.status(status_code.not_found).send({"message": "Essa enquete não existe!"});
+        return;
+    }
+
+    try {
+        const choices = await mongo.collection(COLLECTIONS.choice).find({pollId: id}).toArray();
+
+        res.send(choices); 
     } catch (error) {
-        res.status(500).send(error.message);
+        res.status(status_code.server_error).send(error.message);
     };
 }
 
-export { pollPost, pollGet, pollIdChoice };
+async function resultGet(req, res) {
+
+}
+
+export { pollPost, pollGet, pollIdChoice, resultGet };
