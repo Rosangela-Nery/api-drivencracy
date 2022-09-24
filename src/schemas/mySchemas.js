@@ -2,7 +2,7 @@ import joi from 'joi';
 
 const surveySchema = joi.object({
     title: joi.string().min(3).required(),
-    expireAt: joi.string(),
+    expireAt: joi.string().min(0),
 });
 
 const votingOptionsSchema = joi.object({

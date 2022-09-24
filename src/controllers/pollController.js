@@ -17,14 +17,22 @@ async function pollPost(req, res) {
         res.status(status_code.unprocessable_entity).send(errors);
         return;
     }
+
+    let date = dayjs(poll.expireAt).format("YYYY-MM-DD HH:mm");
+
+    if(poll.expireAt === '') {
+        date = dayjs().add(30, 'day').format("YYYY-MM-DD HH:mm");
+    }
     
+    const objectPoll = {
+        title: poll.title, 
+        expireAt: date,
+    };
+
     try {
         await mongo
             .collection(COLLECTIONS.poll)
-            .insertOne({
-                title: poll.title, 
-                expireAt: dayjs().format("YYYY-MM-DD HH:mm"),
-            });
+            .insertOne(objectPoll);
     
         res.send(status_code.created);
     } catch (error) {
