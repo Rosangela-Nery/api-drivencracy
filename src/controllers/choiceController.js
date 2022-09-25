@@ -77,7 +77,7 @@ async function votePost (req, res) {
             choiceId: id,
             createdAt: dayjs().format("YYYY-MM-DD HH:mm")
         })
-        res.send(status_code.created);
+        res.sendStatus(status_code.created).send();
     } catch (error) {
         res.status(status_code.server_error).send(error.message);
     }

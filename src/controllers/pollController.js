@@ -73,7 +73,40 @@ async function pollIdChoice(req, res) {
 }
 
 async function resultGet(req, res) {
+    const { id } = req.params;
 
+    try {
+
+        const resultsExists = await mongo.collection(COLLECTIONS.poll).findOne({_id: ObjectId(id)});
+
+        if(!resultsExists) {
+            res.status(status_code.not_found).send({"message": "Essa enquete não existe!"});
+            return;
+        }
+
+        const checkingAnswer = await mongo.collection(COLLECTIONS.choice).find({pollId: id}).toArray();
+
+        let winner = {
+            title: '',
+            votes: 0
+        }
+
+        await Promise.all(checkingAnswer.map(async (answer) => {
+            const votes = await mongo.collection(COLLECTIONS.vote).find({choiceId: answer._id.toString()}).count()
+
+            if(votes > winner.votes) {
+                winner.title = answer.title,
+                winner.votes = votes
+            }
+        }))
+
+        resultsExists.result = {...winner}
+
+        res.status(status_code.created).send(resultsExists)
+
+    } catch (error) {
+        res.status(status_code.server_error).send(error.message);
+    }
 }
 
 export { pollPost, pollGet, pollIdChoice, resultGet };
